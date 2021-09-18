@@ -49,10 +49,6 @@ class TestCommand : CommandExecutor{
                     depositRets[ret] = (depositRets[ret]?:0)+1
                 }
 
-                for (ret in depositRets){
-                    sender.sendMessage("結果:${ret.key} 数:${ret.value}")
-                }
-
                 sender.sendMessage("StartWithdraw")
 
                 for (i in 0 until count){
@@ -60,6 +56,12 @@ class TestCommand : CommandExecutor{
                     withdrawRets[ret] = (withdrawRets[ret]?:0)+1
                 }
 
+                sender.sendMessage("入金の結果")
+                for (ret in depositRets){
+                    sender.sendMessage("結果:${ret.key} 数:${ret.value}")
+                }
+
+                sender.sendMessage("出金の結果")
                 for (ret in withdrawRets){
                     sender.sendMessage("結果:${ret.key} 数:${ret.value}")
                 }
@@ -86,14 +88,12 @@ class TestCommand : CommandExecutor{
 
             var thread = core
 
-            sender.sendMessage("論理プロセッサ数:${core}")
-            sender.sendMessage("StartDeposit")
-
             for (c in 0 until core){
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, Runnable {
                     for (i in 0 until oneCount){
-                        val ret = Bank.deposit(uuid,amount, plugin,"BankTest","Man10Bankのテスト").first
-                        depositRets[ret] = (depositRets[ret]?:0)+1
+                        Bank.asyncDeposit(uuid,amount, plugin,"BankTest","Man10Bankのテスト"){ code:Int,_:Double,_:String ->
+                            depositRets[code] = (depositRets[code]?:0)+1
+                        }
                     }
                     thread--
                 })
@@ -103,17 +103,19 @@ class TestCommand : CommandExecutor{
 
                 while (thread!=0){Thread.sleep(1)}
 
-                for (ret in depositRets){
-                    sender.sendMessage("結果:${ret.key} 数:${ret.value}")
-                }
+                Bukkit.getLogger().info("入金キュー完了")
 
                 thread = core
+
+                var tCount = 0
 
                 for (c in 0 until core){
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, Runnable {
                         for (i in 0 until oneCount){
-                            val ret = Bank.withdraw(uuid,amount, plugin,"BankTest","Man10Bankのテスト").first
-                            withdrawRets[ret] = (withdrawRets[ret]?:0)+1
+                            Bank.asyncWithdraw(uuid,amount, plugin,"BankTest","Man10Bankのテスト") { code: Int, _: Double, _: String ->
+                                withdrawRets[code] = (withdrawRets[code]?:0)+1
+                                tCount ++
+                            }
                         }
                         thread--
                     })
@@ -121,10 +123,22 @@ class TestCommand : CommandExecutor{
 
                 while (thread!=0){Thread.sleep(1)}
 
-                for (ret in withdrawRets){
+                Bukkit.getLogger().info("出金キュー完了")
+
+                while (tCount<count){Thread.sleep(1)}
+
+
+                ///////終了処理//////////
+                sender.sendMessage("入金の結果")
+                for (ret in depositRets){
                     sender.sendMessage("結果:${ret.key} 数:${ret.value}")
                 }
 
+                sender.sendMessage("出金の結果")
+                for (ret in withdrawRets){
+                    sender.sendMessage("結果:${ret.key} 数:${ret.value}")
+                }
+                sender.sendMessage("論理プロセッサ数:${core}")
                 sender.sendMessage("Finish")
             })
 
