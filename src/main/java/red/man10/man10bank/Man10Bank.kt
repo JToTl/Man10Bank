@@ -81,6 +81,7 @@ class Man10Bank : JavaPlugin(),Listener {
 
         getCommand("mlend")!!.setExecutor(LoanCommand())
         getCommand("mrevo")!!.setExecutor(ServerLoanCommand())
+        getCommand("baltest")!!.setExecutor(TestCommand())
 
 //        Bukkit.getScheduler().runTaskAsynchronously(this, Runnable { Bank.bankQueue() })
 
