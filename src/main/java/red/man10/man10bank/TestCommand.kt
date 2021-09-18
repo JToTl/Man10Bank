@@ -5,6 +5,7 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import red.man10.man10bank.Man10Bank.Companion.OP
 import red.man10.man10bank.Man10Bank.Companion.plugin
 import red.man10.man10bank.Man10Bank.Companion.sendMsg
 import red.man10.man10bank.Man10Bank.Companion.vault
@@ -19,6 +20,8 @@ class TestCommand : CommandExecutor{
         if (label!="baltest"){return false}
 
         if (sender !is Player)return true
+
+        if (!sender.hasPermission(OP))return true
 
         if (args.isEmpty()){
 
