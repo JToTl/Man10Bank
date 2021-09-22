@@ -398,7 +398,7 @@ object ServerLoan {
 
     }
 
-    private fun batch(){
+    fun batch(){
 
         val now = Date()
 

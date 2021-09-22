@@ -9,6 +9,7 @@ import red.man10.man10bank.Man10Bank.Companion.OP
 import red.man10.man10bank.Man10Bank.Companion.plugin
 import red.man10.man10bank.Man10Bank.Companion.sendMsg
 import red.man10.man10bank.Man10Bank.Companion.vault
+import red.man10.man10bank.loan.ServerLoan
 import java.util.concurrent.ConcurrentHashMap
 
 class TestCommand : CommandExecutor{
@@ -30,11 +31,10 @@ class TestCommand : CommandExecutor{
             return true
         }
 
-        val count = args[1].toIntOrNull()?:return true
-        val uuid = sender.uniqueId
-
         if (args[0] == "single"){
 
+            val count = args[1].toIntOrNull()?:return true
+            val uuid = sender.uniqueId
 
             vault.withdraw(uuid, vault.getBalance(uuid))
 
@@ -77,6 +77,9 @@ class TestCommand : CommandExecutor{
         }
 
         if (args[0] == "multi"){
+
+            val count = args[1].toIntOrNull()?:return true
+            val uuid = sender.uniqueId
 
             vault.withdraw(uuid, vault.getBalance(uuid))
 
@@ -147,7 +150,12 @@ class TestCommand : CommandExecutor{
 
             return true
 
+        }
 
+        if (args[0] == "revo") {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, Runnable {
+                ServerLoan.batch()
+            })
         }
 
         return false
