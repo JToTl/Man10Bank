@@ -167,6 +167,22 @@ class TestCommand : CommandExecutor{
             })
         }
 
+        if (args[0] == "test"){
+
+            for (i in 0 until  Runtime.getRuntime().availableProcessors()){
+                Thread{
+                    sendMsg(sender,"スリープ開始 $i")
+                    Thread.sleep(100000)
+                    sendMsg(sender,"スリープ終了 $i")
+                }.start()
+            }
+
+            Thread{
+                sendMsg(sender,"TEST2")
+            }.start()
+
+        }
+
         return false
     }
 
