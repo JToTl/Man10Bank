@@ -158,6 +158,15 @@ class TestCommand : CommandExecutor{
             })
         }
 
+        if (args[0] == "login"){
+
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, Runnable {
+                for (i in 0 until  (args[1].toIntOrNull()?:100)){
+                    Bank.loginProcess(sender)
+                }
+            })
+        }
+
         return false
     }
 

@@ -818,9 +818,7 @@ class Man10Bank : JavaPlugin(),Listener {
 
     @EventHandler
     fun login(e:PlayerJoinEvent){
-
         Bank.loginProcess(e.player)
-
         Bukkit.getScheduler().runTaskAsynchronously(this, Runnable  {
             Thread.sleep(3000)
             showBalance(e.player,e.player)
