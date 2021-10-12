@@ -28,6 +28,7 @@ import red.man10.man10bank.loan.ServerLoanCommand
 import red.man10.man10score.ScoreDatabase
 import java.text.Normalizer
 import java.text.SimpleDateFormat
+import kotlin.math.floor
 
 
 class Man10Bank : JavaPlugin(),Listener {
@@ -83,14 +84,6 @@ class Man10Bank : JavaPlugin(),Listener {
         getCommand("mrevo")!!.setExecutor(ServerLoanCommand())
         getCommand("baltest")!!.setExecutor(TestCommand())
 
-//        Bukkit.getScheduler().runTaskAsynchronously(this, Runnable { Bank.bankQueue() })
-
-//        Bukkit.getScheduler().runTaskAsynchronously(this, Runnable { EstateData.historyThread() })
-
-//        if (paymentThread){
-//            Bukkit.getScheduler().runTaskAsynchronously(this, Runnable {ServerLoan.paymentThread()})
-//        }
-
     }
 
     override fun onDisable() {
@@ -103,9 +96,10 @@ class Man10Bank : JavaPlugin(),Listener {
 
         reloadConfig()
 
-        loanFee = config.getDouble("loanfee",1.1)
-        loanMax = config.getDouble("loanmax",10000000.0)
-        loanRate = config.getDouble("loanrate",1.0)
+        loanFee = config.getDouble("mlendFee",0.1)
+        loanMax = config.getDouble("mlendMax",10000000.0)
+        loanRate = config.getDouble("mlendRate",1.0)
+
         loggingServerHistory = config.getBoolean("loggingServerHistory",false)
         paymentThread = config.getBoolean("paymentThread",false)
 
@@ -132,6 +126,31 @@ class Man10Bank : JavaPlugin(),Listener {
                 val note = if (args.size>1)args[1] else null
 
                 Bukkit.getScheduler().runTaskAsynchronously(this, Runnable { Cheque.createCheque(sender,amount,note,true) })
+
+                return true
+            }
+
+            "mcheque" ->{//mcheque amount <memo>
+                if (sender !is Player)return false
+//                if (!sender.hasPermission(OP))return false
+
+//                val amount = args[0].toDoubleOrNull()?:return false
+
+                if (args.isEmpty()){
+                    sendMsg(sender,"§e§l/mcheque <金額> <メモ>")
+                    return true
+                }
+
+                val amount = floor(ZenkakuToHankaku(args[0]))
+
+                if (amount<=0.0){
+                    sendMsg(sender,"金額を1以上にしてください")
+                    return true
+                }
+
+                val note = if (args.size>1)args[1] else null
+
+                Bukkit.getScheduler().runTaskAsynchronously(this, Runnable { Cheque.createCheque(sender,amount,note,false) })
 
                 return true
             }
@@ -818,7 +837,9 @@ class Man10Bank : JavaPlugin(),Listener {
 
     @EventHandler
     fun login(e:PlayerJoinEvent){
+
         Bank.loginProcess(e.player)
+
         Bukkit.getScheduler().runTaskAsynchronously(this, Runnable  {
             Thread.sleep(3000)
             showBalance(e.player,e.player)
@@ -827,9 +848,7 @@ class Man10Bank : JavaPlugin(),Listener {
 
     @EventHandler (priority = EventPriority.LOWEST)
     fun logout(e:PlayerQuitEvent){
-        Bukkit.getScheduler().runTaskAsynchronously(this, Runnable  {
-            EstateData.saveCurrentEstate(e.player)
-        })
+        Bukkit.getScheduler().runTaskAsynchronously(this, Runnable { EstateData.saveCurrentEstate(e.player) })
     }
 
     @EventHandler
@@ -839,6 +858,6 @@ class Man10Bank : JavaPlugin(),Listener {
 
         val p = e.player as Player
 
-        Bukkit.getScheduler().runTaskAsynchronously(this, Runnable  { EstateData.saveCurrentEstate(p) })
+        Bukkit.getScheduler().runTaskAsynchronously(this, Runnable { EstateData.saveCurrentEstate(p) })
     }
 }
